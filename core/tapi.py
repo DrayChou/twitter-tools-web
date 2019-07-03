@@ -55,6 +55,7 @@ class TApi(object):
         self.timer_active = True
         self.timer_no_stop = [
         ]
+        self.ct = 0
         pass
 
     def set_timer(self, timer, seconds, *args, **kwargs):  # 设置定时器
@@ -68,7 +69,7 @@ class TApi(object):
         """
         my_task = Task(self, timer, seconds, *args, **kwargs)
         self.timers[timer] = my_task
-        logger.info("Timer set_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
+        print("Timer set_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
             timer, seconds,
             datetime.utcfromtimestamp(
                 time.time()).strftime('%Y-%m-%d %H:%M:%S'),
@@ -81,7 +82,7 @@ class TApi(object):
     def kill_timer(self, timer):
         task = self.timers.get(timer)
         if task:
-            logger.info("Timer kill_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
+            print("Timer kill_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
                 timer, task.seconds,
                 datetime.utcfromtimestamp(
                     time.time()).strftime('%Y-%m-%d %H:%M:%S'),
@@ -95,7 +96,7 @@ class TApi(object):
     def del_timer(self, timer):
         task = self.timers.get(timer)
         if task:
-            logger.info("Timer del_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
+            print("Timer del_timer timer={}, seconds={}, now_timer={}, real_timer={}, delay={}".format(
                 timer, task.seconds,
                 datetime.utcfromtimestamp(
                     time.time()).strftime('%Y-%m-%d %H:%M:%S'),
@@ -109,8 +110,7 @@ class TApi(object):
                 self.timers.pop(timer, None)
                 del task
             except Exception as ex:
-                logger.error(
-                    "Timer del_timer timer={}, task={}, ex={}".format(timer, task, ex))
+                print(                    "Timer del_timer timer={}, task={}, ex={}".format(timer, task, ex))
 
     def get_timer_left(self, timer):
         '''
@@ -157,7 +157,7 @@ class TApi(object):
             self.del_timer(k)
 
     # 心跳的时候检查定时任务
-    def heartbeat(self, timer):
+    def heartbeat(self):
         # if not self.timer_active:
         #     return
 
@@ -191,7 +191,7 @@ class TApi(object):
     # 启动定时器
     def on_timer(self, timer, args=None, kw=None):
         super(TApi, self).on_timer(timer, args, kw)
-        logger.info("Timer on_timer tapi_id:{} timer:{} args:{} kw:{}".format(
+        print("Timer on_timer tapi_id:{} timer:{} args:{} kw:{}".format(
             self.tid, timer, args, kw))
 
         pass
@@ -386,30 +386,23 @@ class TApiManager(object):
                 if tapi:
                     wait_time = 86400 * 3
                     # 房间创建超过一天，而且没有人在房间里面的话
-                    if tapi.ct > 0 and (now_time - tapi.ct) > wait_time and len(tapi.seat_dict) < 1:
+                    if tapi.ct > 0 and (now_time - tapi.ct) > wait_time:
                         timeout_tapi.add(tapi.tapi_id)
                         continue
 
                     # 处理定时心跳任务
                     tapi.heartbeat()
 
-                    # 检查房间死亡倒计时
-                    tapi.check_death_state()
-
             # 删除离线太久的房间
             for tapi_id in timeout_tapi:
                 tapi = self.get_tapi(tapi_id)
-                # 检测无人在房间里，再删除
-                if tapi and len(tapi.seat_dict) < 1:
-                    print(
-                        "[tapi_mgr.heartbeat][dismiss_room] tapi_id={} ".format(tapi_id))
-                    tapi.dismiss_room(4)
+                pass
 
         except Exception as ex:
             import traceback
             traceback.print_exc()
             print("[tapi_mgr.heartbeat][error] exec error ", ex)
-            logger.error("tapi_mgr.heartbeat Exception={}".format(ex))
+            print("tapi_mgr.heartbeat Exception={}".format(ex))
 
 
 tapi_mgr = TApiManager()

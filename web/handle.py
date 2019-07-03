@@ -18,7 +18,6 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def __init__(self, application, request, **kwargs):
         super(BaseHandler, self).__init__(application, request, **kwargs)
-        self.user_dict = {}
 
     def get_current_user(self):  # 前面有绿色小圆圈带个o，再加一个箭头表示重写
         tid = self.get_secure_cookie('tid')  # 获取加密的cookie
@@ -28,8 +27,20 @@ class BaseHandler(tornado.web.RequestHandler):
             return tapi.user
         return
 
+    def get_uuid(self):
+        tid = self.get_secure_cookie('tid')
+        if tid:
+            return str(tid)
+        tid = str(uuid.uuid4())
+        self.set_secure_cookie("tid", tid)
+        return tid
 
-class NotFindHandler(tornado.web.RequestHandler):
+    def get_tapi(self):
+        tid = self.get_uuid()
+        return tapi_mgr.get_tapi(tid)
+
+
+class NotFindHandler(BaseHandler):
     def post(self):
         dict_data = dict()
         dict_data["state"] = 404
@@ -45,26 +56,8 @@ class NotFindHandler(tornado.web.RequestHandler):
         self.write(dict_data)
 
 
-class LoginHandler(tornado.web.RequestHandler):
-    def __init__(self, application, request, **kwargs):
-        super(LoginHandler, self).__init__(application, request, **kwargs)
-        self.api_dict = {}
-
-    def get_uuid(self):
-        tid = self.get_secure_cookie('tid')
-        if tid:
-            return tid
-        tid = str(uuid.uuid1())
-        self.set_secure_cookie("tid", tid)
-        return tid
-
-    def get_tapi(self):
-        tid = self.get_uuid()        
-        return tapi_mgr.get_tapi(tid)
-
+class LoginHandler(BaseHandler):
     def get(self):
-        # self.write("Hello, world")
-
         do = self.get_argument('do', '')
         # 如果是请求授权页面
         if do == "auth":
@@ -96,4 +89,6 @@ class IndexHandler(BaseHandler):
     # 装饰器判断有没有登录，如果没有则跳转到配置的路由下去
     @authenticated
     def get(self):
-        self.write('buy买买买！')
+        # self.write('buy买买买！')
+        self.render('index.html')
+

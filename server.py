@@ -11,7 +11,8 @@ from web.handle import *
 
 
 def main():
-    define('port', default=8888, help='run port', type=int)
+    define('port', default=s_mgr.s_dict.get(
+        "port", "8888"), help='run port', type=int)
 
     tornado.web.Application(
         handlers=[

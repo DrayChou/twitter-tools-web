@@ -20,24 +20,36 @@ class BaseHandler(tornado.web.RequestHandler):
         super(BaseHandler, self).__init__(application, request, **kwargs)
 
     def get_current_user(self):  # 前面有绿色小圆圈带个o，再加一个箭头表示重写
-        tid = self.get_secure_cookie('tid')  # 获取加密的cookie
-        tapi = tapi_mgr.get_tapi(tid)
+        tapi = self.get_tapi()
+        print("BaseHandler", "get_current_user",
+              "tid", tapi.tid if tapi else "")
         if tapi and tapi.user:
-            print(tid,tapi.sid)
+            print("BaseHandler", "get_current_user", "sid", tapi.sid)
             return tapi.user
         return
 
     def get_uuid(self):
-        tid = self.get_secure_cookie('tid')
-        if tid:
-            return str(tid)
-        tid = str(uuid.uuid4())
+        tid = None
+        tid_c = self.get_secure_cookie('tid')
+        if tid_c:
+            tid = tid_c
+        else:
+            tid = uuid.uuid1()
+
+        if type(tid) is bytes:
+            tid = tid.decode(encoding='utf-8')
+        elif type(tid) is not str:
+            tid = str(tid)
+            
         self.set_secure_cookie("tid", tid)
+
         return tid
 
     def get_tapi(self):
         tid = self.get_uuid()
-        return tapi_mgr.get_tapi(tid)
+        if tid:
+            return tapi_mgr.get_tapi(tid)
+        return
 
 
 class NotFindHandler(BaseHandler):
@@ -91,4 +103,3 @@ class IndexHandler(BaseHandler):
     def get(self):
         # self.write('buy买买买！')
         self.render('index.html')
-

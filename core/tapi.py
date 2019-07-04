@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 import twitter
 from requests_oauthlib import OAuth1Session
-from core.settings import load_settings
+from core.settings import s_mgr
 
 REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
@@ -35,8 +35,8 @@ class Task(object):
 
 
 class TApi(object):
-    def __init__(self, sid=None):
-        self.tid = None
+    def __init__(self, sid=None, tid=None):
+        self.tid = tid
         self.sid = sid
         self.user = None
         self.api = None
@@ -110,7 +110,8 @@ class TApi(object):
                 self.timers.pop(timer, None)
                 del task
             except Exception as ex:
-                print(                    "Timer del_timer timer={}, task={}, ex={}".format(timer, task, ex))
+                print("Timer del_timer timer={}, task={}, ex={}".format(
+                    timer, task, ex))
 
     def get_timer_left(self, timer):
         '''
@@ -185,15 +186,10 @@ class TApi(object):
             else:
                 pass
 
-    def on_timer(self, timer, args=None, kw=None):
-        pass
-
     # 启动定时器
     def on_timer(self, timer, args=None, kw=None):
-        super(TApi, self).on_timer(timer, args, kw)
         print("Timer on_timer tapi_id:{} timer:{} args:{} kw:{}".format(
             self.tid, timer, args, kw))
-
         pass
 
     def load_consumer(self):
@@ -201,11 +197,10 @@ class TApi(object):
             return self.consumer_key, self.consumer_secret
 
         try:
-            c = load_settings()
-            if c.get('consumer_key', None):
-                self.consumer_key = c.get('consumer_key')
-                self.consumer_secret = c.get('consumer_secret')
-                return c['consumer_key'], c['consumer_secret']
+            if s_mgr.s_dict.get('consumer_key', None):
+                self.consumer_key = s_mgr.s_dict.get('consumer_key')
+                self.consumer_secret = s_mgr.s_dict.get('consumer_secret')
+                return self.consumer_key, self.consumer_secret
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -366,10 +361,20 @@ class TApiManager(object):
         self.tapi_dict = dict()
 
     def get_tapi(self, tid):
+        # print(
+        #     "TApiManager", "get_tapi", "--0--",
+        #     "tid", tid, type(tid),
+        #     "tapi_dict", self.tapi_dict.keys()
+        # )
+
+        if type(tid) is bytes:
+            tid = tid.decode(encoding='utf-8')
+        elif type(tid) is not str:
+            tid = str(tid)
+
         if self.tapi_dict.get(tid, None) is None:
-            tapi = TApi()
-            tapi.tid = tid
-            print("TApiManager", "get_tapi", tapi.__dict__)
+            tapi = TApi(tid=tid)
+            print("TApiManager", "get_tapi", "new", tapi.tid)
             self.tapi_dict[tid] = tapi
 
         return self.tapi_dict.get(tid)
@@ -385,7 +390,7 @@ class TApiManager(object):
                 tapi = self.get_tapi(tapi_id)
                 if tapi:
                     wait_time = 86400 * 3
-                    # 房间创建超过一天，而且没有人在房间里面的话
+                    # 房间创建超过
                     if tapi.ct > 0 and (now_time - tapi.ct) > wait_time:
                         timeout_tapi.add(tapi.tapi_id)
                         continue

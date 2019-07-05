@@ -389,7 +389,7 @@ class TApiManager(object):
                 now_time = time.time()
                 tapi = self.get_tapi(tapi_id)
                 if tapi:
-                    wait_time = 86400 * 3
+                    wait_time = 86400 * 7
                     # 房间创建超过
                     if tapi.ct > 0 and (now_time - tapi.ct) > wait_time:
                         timeout_tapi.add(tapi.tapi_id)
@@ -398,10 +398,9 @@ class TApiManager(object):
                     # 处理定时心跳任务
                     tapi.heartbeat()
 
-            # 删除离线太久的房间
+            # 删除离线太久的
             for tapi_id in timeout_tapi:
-                tapi = self.get_tapi(tapi_id)
-                pass
+                self.tapi_dict.pop(tapi_id, None)
 
         except Exception as ex:
             import traceback

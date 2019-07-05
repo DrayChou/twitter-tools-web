@@ -21,11 +21,13 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_current_user(self):  # 前面有绿色小圆圈带个o，再加一个箭头表示重写
         tapi = self.get_tapi()
+        if tapi and tapi.user:
+            print("BaseHandler", "get_current_user",
+                  "tid", tapi.tid, "sid", tapi.sid)
+            return tapi.user
+
         print("BaseHandler", "get_current_user",
               "tid", tapi.tid if tapi else "")
-        if tapi and tapi.user:
-            print("BaseHandler", "get_current_user", "sid", tapi.sid)
-            return tapi.user
         return
 
     def get_uuid(self):
@@ -40,7 +42,7 @@ class BaseHandler(tornado.web.RequestHandler):
             tid = tid.decode(encoding='utf-8')
         elif type(tid) is not str:
             tid = str(tid)
-            
+
         self.set_secure_cookie("tid", tid)
 
         return tid
@@ -103,3 +105,11 @@ class IndexHandler(BaseHandler):
     def get(self):
         # self.write('buy买买买！')
         self.render('index.html')
+
+
+class FollowersClearHandler(BaseHandler):
+    # 装饰器判断有没有登录，如果没有则跳转到配置的路由下去
+    @authenticated
+    def get(self):
+        # self.write('buy买买买！')
+        self.render('followers_clear.html')

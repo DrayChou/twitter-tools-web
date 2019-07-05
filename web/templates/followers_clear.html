@@ -9,12 +9,93 @@
 <!--继承body块-->
 {% block body %}
 <main role="main" class="inner cover">
-    <h1 class="cover-heading">测试首页</h1>
+    <h1 class="cover-heading">清理跟随者</h1>
     <p class="lead">
-        测试首页，测试首页，测试首页，测试首页，测试首页，测试首页。
+        <form style="min-width: 592px;text-align: left" method="POST">
+            <fieldset class="form-group">
+                <div class="form-group row">
+                    <div class="col-sm-3">锁推账号</div>
+                    <div class="col-sm-9">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="check_protected" name="check_protected">
+                            <label class="form-check-label" for="check_protected">
+                                    删除那些跟随我而我没有跟随的账号
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-3">默认头像</div>
+                    <div class="col-sm-9">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="default_profile_image" name="default_profile_image" checked>
+                            <label class="form-check-label" for="default_profile_image">
+                                处理默认头像的账号
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="less_statuses_count" class="col-sm-3 col-form-label">最少推数</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="less_statuses_count" name="less_statuses_count" placeholder="少于多少推" value="10">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="less_followers_count" class="col-sm-3 col-form-label">最少被关注</label>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" id="less_followers_count" name="less_followers_count" placeholder="少于多少个关注着的处理" value="10">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-3">彻底拉黑</div>
+                    <div class="col-sm-9">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="unblock" name="unblock">
+                            <label class="form-check-label" for="unblock">
+                                处理这些账号之后不解除对他们的封锁
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="white_list" class="col-sm-3 col-form-label">白名单</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" id="white_list" name="white_list" placeholder="一行一个ID，这些ID不进行处理"></textarea>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-group row" style="text-align: right">
+                <div class="col-lg-9">
+                    <button type="button" onClick="document.location.reload()" class="btn btn-info">刷新</button>
+                    <button type="submit" class="btn btn-primary">开始</button>
+                </div>
+            </div>
+        </form>
     </p>
     <p class="lead">
-        <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">账号</th>
+                    <th scope="col">是否锁推</th>
+                    <th scope="col">推数</th>
+                    <th scope="col">关注者数量</th>
+                    <th scope="col">处理状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-id="test">
+                    <th scope="row">1</th>
+                    <td>@test</td>
+                    <td>True</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>处理中</td>
+                </tr>
+            </tbody>
+        </table>
     </p>
 </main>
 {% end %}

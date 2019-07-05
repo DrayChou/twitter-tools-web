@@ -28,7 +28,7 @@ def main():
         # 想要Tornado能够正确的找到html文件，需要在 Application 中指定文件的位置
         template_path=os.path.join(
             os.path.dirname(__file__), "web", "templates"),
-        # debug=True  # 调试模式，修改后自动重启服务，不需要自动重启，生产情况下切勿开启，安全性
+        debug=True  # 调试模式，修改后自动重启服务，不需要自动重启，生产情况下切勿开启，安全性
     ).listen(options.port)
 
     from core.tapi import tapi_mgr

@@ -113,3 +113,33 @@ class FollowersClearHandler(BaseHandler):
     def get(self):
         # self.write('buy买买买！')
         self.render('followers_clear.html')
+
+    @authenticated
+    def post(self):
+        config = dict({
+            # 是否删除那些跟随我而我没有跟随的账号
+            "check_protected": self.get_argument('check_protected', False),
+            # 少于多少推的处理
+            "less_statuses_count": self.get_argument('less_statuses_count', 10),
+            # 少于多少个关注着的处理
+            "less_followers_count": self.get_argument('less_followers_count', 10),
+            # 是否处理默认头像的账号
+            "default_profile_image": self.get_argument(
+                'default_profile_image', True),
+            # 处理这些账号之后是否解除对他们的封锁
+            "unblock": self.get_argument('unblock', True),
+            # 白名单账号
+            "white_list": self.get_argument('white_list', "")
+        })
+        print("FollowersClearHandler", "post", self.request.body, config)
+
+        tapi = self.get_tapi()
+        tapi.set_timer("call_followers_clear", 5, config=config)
+
+        html = """
+<script language="javascript">
+    alert("任务已经添加");
+    window.location.href="/followers_clear"
+</script>
+        """
+        self.write(html)

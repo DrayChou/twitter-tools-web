@@ -190,7 +190,16 @@ class TApi(object):
     def on_timer(self, timer, args=None, kw=None):
         print("Timer on_timer tapi_id:{} timer:{} args:{} kw:{}".format(
             self.tid, timer, args, kw))
+
+        if timer == "call_followers_clear":
+            self.call_followers_clear(args, kw)
         pass
+
+    def call_followers_clear(self, args=None, kw=None):
+        print("Timer call_followers_clear sid:{} args:{} kw:{}".format(
+            self.sid, args, kw
+        ))
+
 
     def load_consumer(self):
         if self.consumer_key and self.consumer_secret:
@@ -354,7 +363,6 @@ class TApi(object):
             return res_post.user
 
         return
-
 
 class TApiManager(object):
     def __init__(self):

@@ -51,21 +51,23 @@ class BaseHandler(tornado.web.RequestHandler):
             return tapi_mgr.get_tapi(tid)
         return
 
+    def write_error(self, code, dict_data):
+        self.set_status(code)
+        self.write(dict_data)
+
 
 class NotFindHandler(BaseHandler):
     def post(self):
         dict_data = dict()
         dict_data["state"] = 404
         dict_data["msg"] = "not find url"
-        self.set_status(404)
-        self.write(dict_data)
+        self.write_error(404, dict_data)
 
     def get(self):
         dict_data = dict()
         dict_data["state"] = 404
         dict_data["msg"] = "not find url"
-        self.set_status(404)
-        self.write(dict_data)
+        self.write_error(404, dict_data)
 
 
 class LoginHandler(BaseHandler):
@@ -81,11 +83,19 @@ class LoginHandler(BaseHandler):
         if do == "auth":
             key = self.get_argument('key', '')
             secret = self.get_argument('secret', '')
+            if key is None or len(key) < 1:
+                print("LoginHandler", "get", "key", key, "secret", secret)
+                self.write_error(400, "key is error")
+                return
+            if secret is None or len(secret) < 1:
+                print("LoginHandler", "get", "key", key, "secret", secret)
+                self.write_error(400, "secret is error")
+                return
             tapi = self.get_tapi()
             url = tapi.get_url(key, secret)
             if url is None:
-                print("LoginHandler", "get", "key",key,"secret",secret)
-                self.set_status(400)
+                print("LoginHandler", "get", "key", key, "secret", secret)
+                self.write_error(400, "key or secret is error")
                 return
             self.redirect(url)
             return

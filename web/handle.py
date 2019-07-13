@@ -40,7 +40,7 @@ class BaseHandler(tornado.web.RequestHandler):
             tid = tid.decode(encoding='utf-8')
         elif type(tid) is not str:
             tid = str(tid)
-            
+
         self.set_secure_cookie("tid", tid)
 
         return tid
@@ -70,21 +70,27 @@ class NotFindHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
-        do = self.get_argument('do', '')
-        # 如果是请求授权页面
-        if do == "auth":
-            tapi = self.get_tapi()
-            url = tapi.get_url()
-            self.redirect(url)
-            return
-
         next_url = self.get_argument('next', '')  # 获取之前页面的路由
         self.render('login.html', next_url=next_url)
 
     def post(self):
-        code = self.get_argument('code', '')
         next_url = self.get_argument('next', '')  # 获取之前页面的路由
 
+        do = self.get_argument('do', '')
+        # 如果是请求授权页面
+        if do == "auth":
+            key = self.get_argument('key', '')
+            secret = self.get_argument('secret', '')
+            tapi = self.get_tapi()
+            url = tapi.get_url(key, secret)
+            if url is None:
+                print("LoginHandler", "get", "key",key,"secret",secret)
+                self.set_status(400)
+                return
+            self.redirect(url)
+            return
+
+        code = self.get_argument('code', '')
         tapi = self.get_tapi()
         print("LoginHandler", "post", tapi.__dict__)
         if tapi.oauth_token:

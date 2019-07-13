@@ -59,10 +59,22 @@
                     Twitter 常用小工具网页版
                 </p>
                 <p>
-                    <form class="form container" method="POST">
+                    <form class="form container" method="POST" target="_blank" action="/login?next={{next_url}}">
                         <div class="form-group row">
-                            <a target="_blank" href="/login?do=auth&next={{next_url}}" class="btn btn-primary btn-lg btn-block">打开授权页面</a>
+                            <a href="#key" class="btn btn-primary btn-lg btn-block">输入 Consumer Key & Secret</a>
                         </div>
+                        <div class="form-group row">
+                            <input type="text" class="form-control" id="key" name="key" placeholder="Consumer Key">
+                        </div>
+                        <div class="form-group row">
+                            <input type="text" class="form-control" name="secret" placeholder="Consumer Secret">
+                        </div>
+                        <div class="form-group row">
+                            <input type="hidden" class="form-control" name="do" value="auth">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">打开授权页面</button>
+                        </div>
+                    </form>
+                    <form class="form container" method="POST" action="/login?next={{next_url}}">
                         <div class="form-group row">
                             <input type="number" class="form-control" name="code" placeholder="Auth Code">
                         </div>

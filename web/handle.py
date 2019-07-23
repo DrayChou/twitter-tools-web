@@ -75,7 +75,16 @@ class NotFindHandler(BaseHandler):
 class LoginHandler(BaseHandler):
     def get(self):
         next_url = self.get_argument('next', '')  # 获取之前页面的路由
-        self.render('login.html', next_url=next_url)
+
+        key = self.get_secure_cookie('key')
+        secret = self.get_secure_cookie('secret')
+        print("LoginHandler", "get",
+              "key", key, "secret", secret)
+
+        self.render(
+            'login.html', next_url=next_url,
+            key=(key if key else ""), secret=(secret if secret else "")
+        )
 
     def post(self):
         next_url = self.get_argument('next', '')  # 获取之前页面的路由
@@ -108,7 +117,12 @@ class LoginHandler(BaseHandler):
         if tapi.oauth_token:
             if tapi.auth(code):
                 self.set_secure_cookie('id', tapi.sid)  # 设置加密cookie
-                self.redirect("/")  # 跳转到之前的路由
+                self.set_secure_cookie('key', tapi.consumer_key)
+                self.set_secure_cookie('secret', tapi.consumer_secret)
+
+                print("LoginHandler", "post", "next_url", next_url,
+                    "key", tapi.consumer_key, "secret", tapi.consumer_secret)
+                self.redirect(next_url)  # 跳转到之前的路由
                 return
 
         self.render('login.html', next_url=next_url)
@@ -127,8 +141,9 @@ class FollowersClearHandler(BaseHandler):
     # 装饰器判断有没有登录，如果没有则跳转到配置的路由下去
     @authenticated
     def get(self):
-        # self.write('buy买买买！')
-        self.render('followers_clear.html')
+        tapi = self.get_tapi()
+        mutual_followers = tapi.timer_data.get("call_followers_clear", {}).get("mutual_followers", {})
+        self.render('followers_clear.html', mutual_followers=mutual_followers)
 
     @authenticated
     def post(self):

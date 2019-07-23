@@ -77,23 +77,27 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
                     <th scope="col">账号</th>
                     <th scope="col">是否锁推</th>
                     <th scope="col">推数</th>
                     <th scope="col">关注者数量</th>
-                    <th scope="col">处理状态</th>
                 </tr>
             </thead>
             <tbody>
-                <tr data-id="test">
-                    <th scope="row">1</th>
-                    <td>@test</td>
-                    <td>True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>处理中</td>
+                {% for uid,user_info in mutual_followers.items() %}
+                <tr data-id="{{uid}}">
+                    <td>
+                        @{{user_info["screen_name"]}}<br/>{{user_info["name"]}}<br/>
+                        <a href='https://twitter.com/{{user_info["screen_name"]}}'>
+                            <img alt='{{user_info["name"]}}' src='{{user_info["profile_image_url_https"]}}'>
+                        </a>
+                    </td>
+                    <td></td>
+                    <td>{{user_info["statuses_count"]}}</td>
+                    <td>{{user_info["followers_count"]}}</td>
                 </tr>
+                {% end %}
+
             </tbody>
         </table>
     </p>

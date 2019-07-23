@@ -8,6 +8,7 @@ import json
 import time
 from datetime import datetime
 import twitter
+from twitter import TwitterError
 from requests_oauthlib import OAuth1Session
 from core.settings import s_mgr
 
@@ -55,6 +56,8 @@ class TApi(object):
         self.timer_active = True
         self.timer_no_stop = [
         ]
+        self.timer_data = {}
+
         self.ct = 0
         pass
 
@@ -200,6 +203,131 @@ class TApi(object):
             self.sid, args, kw
         ))
 
+        config = kw.get("config", {})
+        if type(config) is str:
+            try:
+                config_tmp = json.dumps(config)
+                if config_tmp:
+                    config = config_tmp
+            except Exception as identifier:
+                config = {}
+        print('call_followers_clear', 'config', config)
+
+        t_data = self.timer_data.get("call_followers_clear", None)
+        if t_data is None:
+            # 需要处理的玩家
+            self.timer_data["call_followers_clear"] = t_data = {
+                "mutual_followers": {},
+                "block_failed_ids": [],
+                "unblock_failed_ids": [],
+            }
+
+        # 拿一页数据
+        follower_ids_cursor = t_data.get("follower_ids_cursor", -1)
+
+        # 拿到自己的 followers
+        print('call_followers_clear', 'Getting followers list')
+        ids = []
+        try:
+            print('call_followers_clear', 'before',
+                  'follower_ids_cursor', follower_ids_cursor)
+            follower_ids_cursor, _, ids = self.api.GetFollowersPaged(
+                cursor=follower_ids_cursor, count=50)
+            print('call_followers_clear', 'after',
+                  'follower_ids_cursor', follower_ids_cursor,
+                  'get {} followers'.format(len(ids)))
+        except TwitterError as e:
+            # 报错了，重新来
+            self.set_timer("call_followers_clear", 5, config=config)
+            print('call_followers_clear', 'TwitterError', e)
+            return
+        except Exception as e:
+            print('call_followers_clear', 'Exception', e)
+            return
+
+        # print('call_followers_clear', 'ids', ids)
+
+        # 保存状态
+        self.timer_data["call_followers_clear"]["follower_ids_cursor"] = follower_ids_cursor
+
+        # 需要清理的账号
+        white_list = config.get("white_list", [])
+        print('call_followers_clear',
+              'Getting zero or default profile image user info')
+        for user_info in ids:
+            try:
+                # print('call_followers_clear', 'user_info', user_info)
+                need_mutu = False
+                # user_info = api.GetUser(user_id=user_id)
+
+                # 白名单
+                if user_info.screen_name in white_list:
+                    continue
+
+                # 少于多少推的处理，处理
+                if user_info.statuses_count <= int(config.get("less_statuses_count", 0)):
+                    need_mutu = True
+
+                # 少于多少个关注着的处理，处理
+                if user_info.followers_count <= int(config.get("less_followers_count", 0)):
+                    need_mutu = True
+
+                # 默认头像的，处理
+                if config.get("default_profile_image", True):
+                    if user_info.default_profile_image == True:
+                        need_mutu = True
+
+                # 锁推&关注了我&没有被我关注
+                if config.get("check_protected", False):
+                    if user_info.protected == True:
+                        if user_info.status == None:
+                            need_mutu = True
+
+                if need_mutu == False:
+                    continue
+
+                try:
+                    # B掉
+                    print('call_followers_clear',
+                          'blocking %d' % user_info.id)
+                    self.api.CreateBlock(user_info.id)
+                except TwitterError:
+                    self.timer_data["call_followers_clear"]["mutual_followers"].append(
+                        user_info.id)
+                if config.get("unblock", True):
+                    try:
+                        # 解除 B
+                        print('call_followers_clear',
+                              'unblocking %d' % user_info.id)
+                        self.api.DestroyBlock(user_info.id)
+                    except TwitterError:
+                        self.timer_data["call_followers_clear"]["unblock_failed_ids"].append(
+                            user_info.id)
+
+                # 记录下来
+                user_data = {
+                    "id": user_info.id,
+                    "screen_name": user_info.screen_name,
+                    "name": user_info.name,
+                    "profile_image_url_https": user_info.profile_image_url_https,
+                    "protected:": str(user_info.protected),
+                    "default_profile_image:": str(user_info.default_profile_image),
+                    "statuses_count:": user_info.statuses_count,
+                    "followers_count:": user_info.followers_count,
+                }
+                print('call_followers_clear', 'user_data', user_data)
+                self.timer_data["call_followers_clear"]["mutual_followers"][user_info.id] = user_data
+
+            except Exception as e:
+                print(e)
+
+        print('call_followers_clear', 'mutual_followers', len(
+            self.timer_data["call_followers_clear"]["mutual_followers"]))
+
+        # 继续抓新流程
+        if follower_ids_cursor > 0:
+            self.set_timer("call_followers_clear", 5, config=config)
+        pass
 
     def load_consumer(self):
         if self.consumer_key and self.consumer_secret:
@@ -374,6 +502,7 @@ class TApi(object):
             return res_post.user
 
         return
+
 
 class TApiManager(object):
     def __init__(self):

@@ -217,7 +217,18 @@ class TApi(object):
         if t_data is None:
             # 需要处理的玩家
             self.timer_data["call_followers_clear"] = t_data = {
-                "mutual_followers": {},
+                "mutual_followers": {
+                    0: {
+                        "id": 0,
+                        "screen_name": "test",
+                        "name": "test",
+                        "profile_image_url_https": "https://twitter.com/SORA_MATO_46AAA",
+                        "protected:": "False",
+                        "default_profile_image:": "False",
+                        "statuses_count:": 0,
+                        "followers_count:": 0,
+                    }
+                },
                 "block_failed_ids": [],
                 "unblock_failed_ids": [],
             }

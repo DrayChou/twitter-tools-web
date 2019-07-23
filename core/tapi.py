@@ -217,21 +217,28 @@ class TApi(object):
         if t_data is None:
             # 需要处理的玩家
             self.timer_data["call_followers_clear"] = t_data = {
+                "create_time": time.time(),
+                "try_num": 0,
                 "mutual_followers": {
-                    0: {
-                        "id": 0,
-                        "screen_name": "test",
-                        "name": "test",
-                        "profile_image_url_https": "https://twitter.com/SORA_MATO_46AAA",
-                        "protected:": "False",
-                        "default_profile_image:": "False",
-                        "statuses_count:": 0,
-                        "followers_count:": 0,
-                    }
+                    # 0: {
+                    #     "id": 0,
+                    #     "screen_name": "test",
+                    #     "name": "test",
+                    #     "profile_image_url_https": "https://twitter.com/SORA_MATO_46AAA",
+                    #     "protected": "False",
+                    #     "default_profile_image": "False",
+                    #     "statuses_count": 0,
+                    #     "followers_count": 0,
+                    # }
                 },
                 "block_failed_ids": [],
                 "unblock_failed_ids": [],
             }
+
+        # 超时的结束掉
+        if abs(time.time() - t_data.get("create_time", 0)) > 3600 * 24 * 3:
+            print('call_followers_clear', 'run over 3 day', 'kill !!!!')
+            return
 
         # 拿一页数据
         follower_ids_cursor = t_data.get("follower_ids_cursor", -1)
@@ -259,6 +266,7 @@ class TApi(object):
         # print('call_followers_clear', 'ids', ids)
 
         # 保存状态
+        self.timer_data["call_followers_clear"]["try_num"] += 1
         self.timer_data["call_followers_clear"]["follower_ids_cursor"] = follower_ids_cursor
 
         # 需要清理的账号
@@ -321,10 +329,10 @@ class TApi(object):
                     "screen_name": user_info.screen_name,
                     "name": user_info.name,
                     "profile_image_url_https": user_info.profile_image_url_https,
-                    "protected:": str(user_info.protected),
-                    "default_profile_image:": str(user_info.default_profile_image),
-                    "statuses_count:": user_info.statuses_count,
-                    "followers_count:": user_info.followers_count,
+                    "protected": str(user_info.protected),
+                    "default_profile_image": str(user_info.default_profile_image),
+                    "statuses_count": user_info.statuses_count,
+                    "followers_count": user_info.followers_count,
                 }
                 print('call_followers_clear', 'user_data', user_data)
                 self.timer_data["call_followers_clear"]["mutual_followers"][user_info.id] = user_data

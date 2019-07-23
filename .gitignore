@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 /settings.yml
 /cache
+.vscode/

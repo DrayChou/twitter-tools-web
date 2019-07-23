@@ -261,9 +261,12 @@ class TApi(object):
             print("api", "save_credentials", yml_f)
             with open(yml_f, 'w') as f:
                 yaml.dump({
+                    "consumer_key": self.consumer_key,
+                    "consumer_secret": self.consumer_secret,
                     "access_token": self.access_token,
                     "access_token_secret": self.access_token_secret,
                     "sid": self.sid,
+                    "tid": self.tid,
                     "user": self.user,
                 }, f, default_flow_style=False)
 
@@ -271,9 +274,12 @@ class TApi(object):
             print("api", "save_credentials", json_f)
             with open(json_f, 'w') as f:
                 json.dump({
+                    "consumer_key": self.consumer_key,
+                    "consumer_secret": self.consumer_secret,
                     "access_token": self.access_token,
                     "access_token_secret": self.access_token_secret,
                     "sid": self.sid,
+                    "tid": self.tid,
                     "user": self.user.__dict__,
                 }, f, indent=2)
 
@@ -286,14 +292,19 @@ class TApi(object):
 
         return False
 
-    def get_url(self):
+    def get_url(self, ck=None, cs=None):
         try:
-            ck, cs = self.load_consumer()
-            if self.consumer_key is None:
+            if ck is None and cs is None:
+                ck, cs = self.load_consumer()
+            else:
+                self.consumer_key = ck
+                self.consumer_secret = cs
+
+            if ck is None:
                 return
 
             oauth_client = OAuth1Session(
-                client_key=self.consumer_key, client_secret=self.consumer_secret, callback_uri='oob')
+                client_key=ck, client_secret=cs, callback_uri='oob')
 
             resp = oauth_client.fetch_request_token(REQUEST_TOKEN_URL)
             if resp.get("oauth_token", None) is None:

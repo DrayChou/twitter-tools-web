@@ -203,22 +203,13 @@ class TApi(object):
             self.sid, args, kw
         ))
 
-        config = kw.get("config", {})
-        if type(config) is str:
-            try:
-                config_tmp = json.dumps(config)
-                if config_tmp:
-                    config = config_tmp
-            except Exception as identifier:
-                config = {}
-        print('call_followers_clear', 'config', config)
-
-        t_data = self.timer_data.get("call_followers_clear", None)
-        if t_data is None:
-            # 需要处理的玩家
-            self.timer_data["call_followers_clear"] = t_data = {
+        # 初始化
+        is_start = kw.get("start", False)
+        if is_start:
+            self.timer_data["call_followers_clear"] = {
                 "create_time": time.time(),
                 "try_num": 0,
+                # 需要处理的玩家
                 "mutual_followers": {
                     # 0: {
                     #     "id": 0,
@@ -235,35 +226,47 @@ class TApi(object):
                 "unblock_failed_ids": [],
             }
 
+        # 拿到配置信息
+        config = kw.get("config", {})
+        if type(config) is str:
+            try:
+                config_tmp = json.dumps(config)
+                if config_tmp:
+                    config = config_tmp
+            except Exception as identifier:
+                config = {}
+        print(self.sid, 'call_followers_clear', 'config', config)
+
         # 超时的结束掉
-        if abs(time.time() - t_data.get("create_time", 0)) > 3600 * 24 * 3:
-            print('call_followers_clear', 'run over 3 day', 'kill !!!!')
+        create_time = self.timer_data["call_followers_clear"].get("create_time", 0)
+        if abs(time.time() - create_time) > 3600 * 24 * 3:
+            print(self.sid, 'call_followers_clear', 'run over 3 day', 'kill !!!!')
             return
 
         # 拿一页数据
-        follower_ids_cursor = t_data.get("follower_ids_cursor", -1)
+        follower_ids_cursor = self.timer_data["call_followers_clear"].get("follower_ids_cursor", -1)
 
         # 拿到自己的 followers
-        print('call_followers_clear', 'Getting followers list')
+        print(self.sid, 'call_followers_clear', 'Getting followers list')
         ids = []
         try:
-            print('call_followers_clear', 'before',
+            print(self.sid, 'call_followers_clear', 'before',
                   'follower_ids_cursor', follower_ids_cursor)
             follower_ids_cursor, _, ids = self.api.GetFollowersPaged(
                 cursor=follower_ids_cursor, count=50)
-            print('call_followers_clear', 'after',
+            print(self.sid, 'call_followers_clear', 'after',
                   'follower_ids_cursor', follower_ids_cursor,
                   'get {} followers'.format(len(ids)))
         except TwitterError as e:
             # 报错了，重新来
             self.set_timer("call_followers_clear", 5, config=config)
-            print('call_followers_clear', 'TwitterError', e)
+            print(self.sid, 'call_followers_clear', 'TwitterError', e)
             return
         except Exception as e:
-            print('call_followers_clear', 'Exception', e)
+            print(self.sid, 'call_followers_clear', 'Exception', e)
             return
 
-        # print('call_followers_clear', 'ids', ids)
+        # print(self.sid, 'call_followers_clear', 'ids', ids)
 
         # 保存状态
         self.timer_data["call_followers_clear"]["try_num"] += 1
@@ -271,11 +274,11 @@ class TApi(object):
 
         # 需要清理的账号
         white_list = config.get("white_list", [])
-        print('call_followers_clear',
+        print(self.sid, 'call_followers_clear',
               'Getting zero or default profile image user info')
         for user_info in ids:
             try:
-                # print('call_followers_clear', 'user_info', user_info)
+                # print(self.sid, 'call_followers_clear', 'user_info', user_info)
                 need_mutu = False
                 # user_info = api.GetUser(user_id=user_id)
 
@@ -307,7 +310,7 @@ class TApi(object):
 
                 try:
                     # B掉
-                    print('call_followers_clear',
+                    print(self.sid, 'call_followers_clear',
                           'blocking %d' % user_info.id)
                     self.api.CreateBlock(user_info.id)
                 except TwitterError:
@@ -316,7 +319,7 @@ class TApi(object):
                 if config.get("unblock", True):
                     try:
                         # 解除 B
-                        print('call_followers_clear',
+                        print(self.sid, 'call_followers_clear',
                               'unblocking %d' % user_info.id)
                         self.api.DestroyBlock(user_info.id)
                     except TwitterError:
@@ -334,13 +337,13 @@ class TApi(object):
                     "statuses_count": user_info.statuses_count,
                     "followers_count": user_info.followers_count,
                 }
-                print('call_followers_clear', 'user_data', user_data)
+                print(self.sid, 'call_followers_clear', 'user_data', user_data)
                 self.timer_data["call_followers_clear"]["mutual_followers"][user_info.id] = user_data
 
             except Exception as e:
                 print(e)
 
-        print('call_followers_clear', 'mutual_followers', len(
+        print(self.sid, 'call_followers_clear', 'mutual_followers', len(
             self.timer_data["call_followers_clear"]["mutual_followers"]))
 
         # 继续抓新流程

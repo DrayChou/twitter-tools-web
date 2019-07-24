@@ -17,7 +17,7 @@
                     <div class="col-sm-3">锁推账号</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="check_protected" name="check_protected">
+                            <input class="form-check-input" type="checkbox" id="check_protected" name="check_protected" {{"checked=checked" if config["check_protected"] else ""}}>
                             <label class="form-check-label" for="check_protected">
                                     删除那些跟随我而我没有跟随的账号
                             </label>
@@ -28,7 +28,7 @@
                     <div class="col-sm-3">默认头像</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="default_profile_image" name="default_profile_image" checked>
+                            <input class="form-check-input" type="checkbox" id="default_profile_image" name="default_profile_image" {{"checked=checked" if config["default_profile_image"] else ""}}>
                             <label class="form-check-label" for="default_profile_image">
                                 处理默认头像的账号
                             </label>
@@ -38,22 +38,22 @@
                 <div class="form-group row">
                     <label for="less_statuses_count" class="col-sm-3 col-form-label">最少推数</label>
                     <div class="col-sm-9">
-                        <input type="number" class="form-control" id="less_statuses_count" name="less_statuses_count" placeholder="少于多少推" value="10">
+                        <input type="number" class="form-control" id="less_statuses_count" name="less_statuses_count" placeholder="少于多少推" value="{{config['less_statuses_count']}}">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="less_followers_count" class="col-sm-3 col-form-label">最少被关注</label>
                     <div class="col-sm-9">
-                        <input type="number" class="form-control" id="less_followers_count" name="less_followers_count" placeholder="少于多少个关注着的处理" value="10">
+                        <input type="number" class="form-control" id="less_followers_count" name="less_followers_count" placeholder="少于多少个关注着的处理" value="{{config['less_followers_count']}}">
                     </div>
                 </div>
                 <div class="form-group row">
-                    <div class="col-sm-3">彻底拉黑</div>
+                    <div class="col-sm-3">是否彻底拉黑</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="unblock" name="unblock">
+                            <input class="form-check-input" type="checkbox" id="unblock" name="unblock" {{"checked=checked" if config["unblock"] else ""}}>
                             <label class="form-check-label" for="unblock">
-                                处理这些账号之后不解除对他们的封锁
+                                处理这些账号之后解除对他们的封锁
                             </label>
                         </div>
                     </div>
@@ -61,7 +61,9 @@
                 <div class="form-group row">
                     <label for="white_list" class="col-sm-3 col-form-label">白名单</label>
                     <div class="col-sm-9">
-                        <textarea class="form-control" id="white_list" name="white_list" placeholder="一行一个ID，这些ID不进行处理"></textarea>
+                        <textarea class="form-control" id="white_list" name="white_list" placeholder="一行一个ID，这些ID不进行处理">
+                            {{config['white_list']}}
+                        </textarea>
                     </div>
                 </div>
             </fieldset>
@@ -78,6 +80,7 @@
             <thead>
                 <tr>
                     <th scope="col">账号</th>
+                    <th scope="col">-</th>
                     <th scope="col">是否锁推</th>
                     <th scope="col">推数</th>
                     <th scope="col">关注者数量</th>
@@ -87,7 +90,14 @@
                 {% for uid,user_info in mutual_followers.items() %}
                 <tr data-id="{{uid}}">
                     <td>
-                        @{{user_info["screen_name"]}}<br/>{{user_info["name"]}}<br/>
+                        <a href='https://twitter.com/{{user_info["screen_name"]}}'>
+                            @{{user_info["screen_name"]}}
+                        </a>
+                        <p>
+                            {{user_info["name"]}}
+                        </p>
+                    </td>
+                    <td>
                         <a href='https://twitter.com/{{user_info["screen_name"]}}'>
                             <img alt='{{user_info["name"]}}' src='{{user_info["profile_image_url_https"]}}'>
                         </a>

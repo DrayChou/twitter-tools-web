@@ -138,34 +138,39 @@ class IndexHandler(BaseHandler):
 
 
 class FollowersClearHandler(BaseHandler):
+    def __init__(self, application, request, **kwargs):
+        super(FollowersClearHandler, self).__init__(application, request, **kwargs)
+        self.config = {
+            # 是否删除那些跟随我而我没有跟随的账号
+            "check_protected": False,
+            # 少于多少推的处理
+            "less_statuses_count": 10,
+            # 少于多少个关注着的处理
+            "less_followers_count": 10,
+            # 是否处理默认头像的账号
+            "default_profile_image": True,
+            # 处理这些账号之后是否解除对他们的封锁
+            "unblock": True,
+            # 白名单账号
+            "white_list": []
+        }
+
     # 装饰器判断有没有登录，如果没有则跳转到配置的路由下去
     @authenticated
     def get(self):
         tapi = self.get_tapi()
         mutual_followers = tapi.timer_data.get("call_followers_clear", {}).get("mutual_followers", {})
-        self.render('followers_clear.html', mutual_followers=mutual_followers)
+        self.render('followers_clear.html', mutual_followers=mutual_followers, config=self.config)
 
     @authenticated
     def post(self):
-        config = dict({
-            # 是否删除那些跟随我而我没有跟随的账号
-            "check_protected": self.get_argument('check_protected', False),
-            # 少于多少推的处理
-            "less_statuses_count": self.get_argument('less_statuses_count', 10),
-            # 少于多少个关注着的处理
-            "less_followers_count": self.get_argument('less_followers_count', 10),
-            # 是否处理默认头像的账号
-            "default_profile_image": self.get_argument(
-                'default_profile_image', True),
-            # 处理这些账号之后是否解除对他们的封锁
-            "unblock": self.get_argument('unblock', True),
-            # 白名单账号
-            "white_list": self.get_argument('white_list', "")
-        })
-        print("FollowersClearHandler", "post", self.request.body, config)
+        for k, v in self.config.items():
+            if self.get_argument(k, None):
+                self.config[k] = self.get_argument(k)
+        print("FollowersClearHandler", "post", self.request.body, self.config)
 
         tapi = self.get_tapi()
-        tapi.set_timer("call_followers_clear", 5, config=config)
+        tapi.set_timer("call_followers_clear", 1, config=self.config, start=True)
 
         html = """
 <script language="javascript">

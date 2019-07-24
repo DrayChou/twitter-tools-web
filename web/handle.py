@@ -159,8 +159,14 @@ class FollowersClearHandler(BaseHandler):
     @authenticated
     def get(self):
         tapi = self.get_tapi()
-        mutual_followers = tapi.timer_data.get("call_followers_clear", {}).get("mutual_followers", {})
-        self.render('followers_clear.html', mutual_followers=mutual_followers, config=self.config)
+        
+        is_start = False
+        data = tapi.timer_data.get("call_followers_clear", {})
+        if data.get("create_time", 0) > 0:
+            is_start = True
+
+        mutual_followers = data.get("mutual_followers", {})
+        self.render('followers_clear.html', is_start=is_start, mutual_followers=mutual_followers, config=self.config)
 
     @authenticated
     def post(self):

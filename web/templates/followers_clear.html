@@ -70,7 +70,11 @@
             <div class="form-group row" style="text-align: right">
                 <div class="col-lg-9">
                     <button type="button" onClick="document.location.reload()" class="btn btn-info">刷新</button>
+                    {% if is_start %}
+                    <button type="button" class="btn btn-info">进行中...</button>
+                    {% else %}
                     <button type="submit" class="btn btn-primary">开始</button>
+                    {% end %}
                 </div>
             </div>
         </form>

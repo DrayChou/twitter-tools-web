@@ -241,6 +241,7 @@ class TApi(object):
         # 超时的结束掉
         create_time = self.timer_data["call_followers_clear"].get("create_time", 0)
         if abs(time.time() - create_time) > 3600 * 24 * 3:
+            self.timer_data["call_followers_clear"]["state"] = 4
             print(self.sid, 'call_followers_clear', 'run over 3 day', 'kill !!!!')
             return
 

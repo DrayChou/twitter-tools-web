@@ -207,6 +207,7 @@ class TApi(object):
         is_start = kw.get("start", False)
         if is_start:
             self.timer_data["call_followers_clear"] = {
+                "state": 0,
                 "create_time": time.time(),
                 "try_num": 0,
                 # 需要处理的玩家
@@ -269,6 +270,7 @@ class TApi(object):
         # print(self.sid, 'call_followers_clear', 'ids', ids)
 
         # 保存状态
+        self.timer_data["call_followers_clear"]["state"] = 1
         self.timer_data["call_followers_clear"]["try_num"] += 1
         self.timer_data["call_followers_clear"]["follower_ids_cursor"] = follower_ids_cursor
 
@@ -314,7 +316,7 @@ class TApi(object):
                           'blocking %d' % user_info.id)
                     self.api.CreateBlock(user_info.id)
                 except TwitterError:
-                    self.timer_data["call_followers_clear"]["mutual_followers"].append(
+                    self.timer_data["call_followers_clear"]["block_failed_ids"].append(
                         user_info.id)
                 if config.get("unblock", True):
                     try:
@@ -349,6 +351,9 @@ class TApi(object):
         # 继续抓新流程
         if follower_ids_cursor > 0:
             self.set_timer("call_followers_clear", 5, config=config)
+        else:
+            # 标记为已经结束
+            self.timer_data["call_followers_clear"]["state"] = 4
         pass
 
     def load_consumer(self):

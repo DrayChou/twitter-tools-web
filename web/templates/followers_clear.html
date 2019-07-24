@@ -17,7 +17,7 @@
                     <div class="col-sm-3">锁推账号</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="check_protected" name="check_protected" {{"checked=checked" if config["check_protected"] else ""}}>
+                            <input class="form-check-input" type="checkbox" id="check_protected" name="check_protected" {{ "checked=checked" if config[ "check_protected"] else ""}}>
                             <label class="form-check-label" for="check_protected">
                                     删除那些跟随我而我没有跟随的账号
                             </label>
@@ -28,7 +28,7 @@
                     <div class="col-sm-3">默认头像</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="default_profile_image" name="default_profile_image" {{"checked=checked" if config["default_profile_image"] else ""}}>
+                            <input class="form-check-input" type="checkbox" id="default_profile_image" name="default_profile_image" {{ "checked=checked" if config[ "default_profile_image"] else ""}}>
                             <label class="form-check-label" for="default_profile_image">
                                 处理默认头像的账号
                             </label>
@@ -51,7 +51,7 @@
                     <div class="col-sm-3">是否彻底拉黑</div>
                     <div class="col-sm-9">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="unblock" name="unblock" {{"checked=checked" if config["unblock"] else ""}}>
+                            <input class="form-check-input" type="checkbox" id="unblock" name="unblock" {{ "checked=checked" if config[ "unblock"] else ""}}>
                             <label class="form-check-label" for="unblock">
                                 处理这些账号之后解除对他们的封锁
                             </label>
@@ -69,12 +69,10 @@
             </fieldset>
             <div class="form-group row" style="text-align: right">
                 <div class="col-lg-9">
-                    <button type="button" onClick="document.location.reload()" class="btn btn-info">刷新</button>
-                    {% if is_start %}
-                    <button type="button" class="btn btn-info">进行中...</button>
-                    {% else %}
-                    <button type="submit" class="btn btn-primary">开始</button>
-                    {% end %}
+                    <button type="button" onClick="document.location.reload()" class="btn btn-info">刷新</button> {% if state == 1 %}
+                    <button type="button" class="btn btn-info">进行中...</button> {% elif state == 4 %}
+                    <button type="submit" class="btn btn-info">重新开始</button> {% else %}
+                    <button type="submit" class="btn btn-primary">开始</button> {% end %}
                 </div>
             </div>
         </form>

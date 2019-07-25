@@ -206,8 +206,19 @@ class TApi(object):
         # 初始化
         is_start = kw.get("start", False)
         if is_start:
+            # 拿到配置信息
+            config = kw.get("config", {})
+            if type(config) is str:
+                try:
+                    config_tmp = json.dumps(config)
+                    if config_tmp:
+                        config = config_tmp
+                except Exception as identifier:
+                    config = {}
+
             self.timer_data["call_followers_clear"] = {
                 "state": 0,
+                "config": config,
                 "create_time": time.time(),
                 "try_num": 0,
                 # 需要处理的玩家
@@ -228,14 +239,7 @@ class TApi(object):
             }
 
         # 拿到配置信息
-        config = kw.get("config", {})
-        if type(config) is str:
-            try:
-                config_tmp = json.dumps(config)
-                if config_tmp:
-                    config = config_tmp
-            except Exception as identifier:
-                config = {}
+        config =  self.timer_data["call_followers_clear"].get("config", {})
         print(self.sid, 'call_followers_clear', 'config', config)
 
         # 超时的结束掉

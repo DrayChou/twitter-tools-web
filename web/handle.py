@@ -162,9 +162,10 @@ class FollowersClearHandler(BaseHandler):
         
         data = tapi.timer_data.get("call_followers_clear", {})
         state = data.get("state", 0)
+        config = data.get("config", self.config)
 
         mutual_followers = data.get("mutual_followers", {})
-        self.render('followers_clear.html', state=state, mutual_followers=mutual_followers, config=self.config)
+        self.render('followers_clear.html', state=state, mutual_followers=mutual_followers, config=config)
 
     @authenticated
     def post(self):

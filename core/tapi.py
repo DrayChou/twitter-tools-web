@@ -289,6 +289,10 @@ class TApi(object):
                 if user_info.screen_name in white_list:
                     continue
 
+                # 我关注的，跳过
+                if user_info.following:
+                    continue
+
                 # 少于多少推的处理，处理
                 if user_info.statuses_count <= int(config.get("less_statuses_count", 0)):
                     need_mutu = True
@@ -340,7 +344,7 @@ class TApi(object):
                     "statuses_count": user_info.statuses_count,
                     "followers_count": user_info.followers_count,
                 }
-                print(self.sid, 'call_followers_clear', 'user_data', user_data)
+                print(self.sid, 'call_followers_clear', 'user_info', user_info, 'user_data', user_data)
                 self.timer_data["call_followers_clear"]["mutual_followers"][user_info.id] = user_data
 
             except Exception as e:

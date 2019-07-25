@@ -144,9 +144,9 @@ class FollowersClearHandler(BaseHandler):
             # 是否删除那些跟随我而我没有跟随的账号
             "check_protected": False,
             # 少于多少推的处理
-            "less_statuses_count": 10,
+            "less_statuses_count": 50,
             # 少于多少个关注着的处理
-            "less_followers_count": 10,
+            "less_followers_count": 30,
             # 是否处理默认头像的账号
             "default_profile_image": True,
             # 处理这些账号之后是否解除对他们的封锁

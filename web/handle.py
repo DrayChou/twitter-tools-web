@@ -141,8 +141,10 @@ class FollowersClearHandler(BaseHandler):
     def __init__(self, application, request, **kwargs):
         super(FollowersClearHandler, self).__init__(application, request, **kwargs)
         self.config = {
-            # 是否删除那些跟随我而我没有跟随的账号
+            # 是否删除那些跟随我而我没有跟随的锁推用户
             "check_protected": False,
+            # 是否删除那些跟随我而我没有跟随的账号
+            "check_menofollow": False,
             # 少于多少推的处理
             "less_statuses_count": 50,
             # 少于多少个关注着的处理

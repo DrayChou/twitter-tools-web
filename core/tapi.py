@@ -317,7 +317,7 @@ class TApi(object):
                             need_mutu = True
 
                  # 锁推&关注了我&没有被我关注
-                if self.config.get("check_menofollow", False):
+                if config.get("check_menofollow", False):
                     if user_info.following == False:
                         need_mutu = True
 
